@@ -80,3 +80,9 @@ function generatePolynomialDiv() {
 
 var task = generatePolynomialDiv()
 console.log("Question: " + task.question + "<br/>Answer: " + task.answer);
+
+var canvas = document.getElementById("myCanvas");
+var c = canvas.getContext("2d");
+c.font = "30px Arial";
+c.fillStyle = "blue";
+c.fillText(task.question, 50, 80);
