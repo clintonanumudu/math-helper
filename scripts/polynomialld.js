@@ -1,7 +1,7 @@
 function generateTerm() {
 	var term = "";
 	var operator = Math.floor(Math.random() * 2);
-	var number = Math.floor(Math.random() * 101);
+	var number = Math.floor(Math.random() * 11);
 	if (operator == 0) {
 		term += "+";
 	}
@@ -11,7 +11,6 @@ function generateTerm() {
 	term+=number;
 	return term;
 }
-
 function generateExpression(degree) {
 	var expression = "";
 	for (let i = 0; i < degree; i++) {
@@ -22,12 +21,41 @@ function generateExpression(degree) {
 		else {
 			expression += number.toString()
 		}
+		if (i < degree - 2) {
+			expression += "^" + (degree-i-1).toString();
+		}
 	}
 	return expression;
 }
-
-function longAlgebraicDivision(poly, division) { // From https://sim0n.wordpress.com/2009/04/04/javascript-simple-algebraic-long-division/
-	//Format the equations correctly
+function extractCompontents(Term, constantChar) {
+	try{
+	var Comps = new Array();
+	Comps[0] = Term.split(constantChar)[0];
+	Comps[1] = Term.split("^")[1];
+	if(Comps[0] == "") { Comps[0]=1; }
+	if(String(Comps[1]) == "undefined") { Comps[1]=1; }
+	return Comps;
+	}
+	catch {
+		return "unsolvable";
+	}
+}
+function divideTerm(Term1, Term2, constantChar) {
+    var extTerm1 = extractCompontents(Term1, constantChar)
+	var extTerm2 = extractCompontents(Term2, constantChar)
+	return String(extTerm1[0]/extTerm2[0]) + constantChar + "^" + String(extTerm1[1]-extTerm2[1]);
+}
+function multiplyTerm(Term1, Term2, constantChar) {
+	var extTerm1 = extractCompontents(Term1, constantChar)
+	return String(extTerm1[0] * Term2) + constantChar + "^" + String(extTerm1[1]);
+}
+function subtractTerm(Term1, Term2, constantChar) {
+    var extTerm1 = extractCompontents(Term1, constantChar)
+	var extTerm2 = extractCompontents(Term2, constantChar)
+	if(extTerm1[1] != extTerm2[1]) { return null; }
+	return String(extTerm1[0]-extTerm2[0]) + constantChar + "^" + String(extTerm1[1]);
+}
+function longAlgebraicDivision(poly, division) { //https://sim0n.wordpress.com/2009/04/04/javascript-simple-algebraic-long-division/
 	poly = poly.replace(/(--|\+\+)/g, "+");
 	poly = poly.replace(/(-\+|\+-)/g, "-");
 	poly = poly.replace(/^\+/g, "");
@@ -36,11 +64,8 @@ function longAlgebraicDivision(poly, division) { // From https://sim0n.wordpress
 	division = division.replace(/(-\+|\+-)/g, "-");
 	division = division.replace(/^\+/g, "");
 	division = division.replace(/\s/g, "");
-	//Add spaces to the equation to break it apart
 	poly = poly.replace(/([+-])/g, " $1");
-	//Split the equation at the spaces
 	var equ = poly.split(" ");
-	//Begin the division
 	var output = ""
 	var lastTerm = ""
 	for(var i=0;i<equ.length-1;i++) {
@@ -58,31 +83,72 @@ function longAlgebraicDivision(poly, division) { // From https://sim0n.wordpress
 			lastTerm = dt;
 		}
 	}
-	//Format output
 	output = output.replace(/\+([+-])/g, "$1");
 	output = output.replace(/x\^0\+$/g, "");
 	output = output.replace(/x\^1/g, "x");
-	//Calculate remainder
 	lastTerm = lastTerm.replace(/x\^0/g, "");
 	output += " : Remainder [" + String(Number(equ[equ.length-1]) - Number(lastTerm)) + "]";
 	return output;
 }
-
 function generatePolynomialDiv() {
 	var polydiv = {
 		question: "",
 		answer: ""
 	};
-	polydiv.question += "(" + generateExpression(4) + ")/" + "(" + generateExpression(2) + ")";
-	polydiv.answer = ""; //solvePolynomialDiv(polydiv.question);
+	var poly = generateExpression(4);
+	var divisor = "x-1";
+	polydiv.question += "(" + poly + ")/" + "(" + divisor + ")";
+	polydiv.answer = longAlgebraicDivision(poly, divisor);
 	return polydiv;
 }
 
-var task = generatePolynomialDiv()
-console.log("Question: " + task.question + "<br/>Answer: " + task.answer);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var task = generatePolynomialDiv();
+while (task.answer.includes("[0]") == false) {
+	try {
+		task = generatePolynomialDiv();
+	}
+	catch(err) {
+	}
+	console.log("Searching");
+}
 var canvas = document.getElementById("myCanvas");
 var c = canvas.getContext("2d");
 c.font = "30px Arial";
 c.fillStyle = "blue";
 c.fillText(task.question, 50, 80);
+c.fillText(task.answer, 500, 80);
