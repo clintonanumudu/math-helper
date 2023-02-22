@@ -1,0 +1,10 @@
+body {
+	margin: 0;
+	overflow: hidden;
+}
+
+canvas {
+	background-image: url("../images/grid.jpg");
+	background-size: 200px 200px;
+	opacity: 0.5;
+}
